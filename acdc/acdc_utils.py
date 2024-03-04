@@ -38,12 +38,18 @@ def kl_divergence(
     last_seq_element_only: bool = True,
     base_model_probs_last_seq_element_only: bool = False,
     return_one_element: bool = True,
+    padded: bool = False,
+    indices: Optional[torch.Tensor] = None
 ) -> torch.Tensor:
     # Note: we want base_model_probs_last_seq_element_only to remain False by default, because when the Docstring
     # circuit uses this, it already takes the last position before passing it in.
 
     if last_seq_element_only:
         logits = logits[:, -1, :]
+    elif(padded):
+        logits = torch.stack([
+            torch.squeeze(logits[i, indices[i] - 1, :]) for i in range(indices.shape[0])
+        ])
 
     if base_model_probs_last_seq_element_only:
         base_model_logprobs = base_model_logprobs[:, -1, :]
@@ -142,6 +148,9 @@ class MatchNLLMetric:
 
 def logit_diff_metric(logits, correct_labels, wrong_labels, return_one_element: bool=True) -> torch.Tensor:
     range = torch.arange(len(logits))
+    print(logits.shape)
+    print(correct_labels.shape)
+    print(wrong_labels.shape)
     correct_logits = logits[range, -1, correct_labels]
     incorrect_logits = logits[range, -1, wrong_labels]
 
@@ -154,11 +163,17 @@ def logit_diff_metric(logits, correct_labels, wrong_labels, return_one_element: 
 
 def frac_correct_metric(logits, correct_labels, wrong_labels, return_one_element: bool=True) -> torch.Tensor:
     range = torch.arange(len(logits))
+    print(logits.shape)
+    print(correct_labels.shape)
+    print(wrong_labels.shape)
     correct_logits = logits[range, -1, correct_labels]
     incorrect_logits = logits[range, -1, wrong_labels]
+    print(correct_logits)
+    print(incorrect_logits)
 
     # Neg so we maximize correct
     if return_one_element:
+        print(correct_logits > incorrect_logits)
         return -(correct_logits > incorrect_logits).float().mean()
     else:
         return -(correct_logits > incorrect_logits).float().view(-1)

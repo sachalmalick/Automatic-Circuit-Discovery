@@ -126,6 +126,7 @@ from acdc.induction.utils import (
     get_mask_repeat_candidates,
 )
 from acdc.greaterthan.utils import get_all_greaterthan_things
+from acdc.transprop.utils import get_transprop_things
 
 from acdc.acdc_graphics import (
     build_colorscheme,
@@ -145,7 +146,7 @@ torch.autograd.set_grad_enabled(False)
 parser = argparse.ArgumentParser(description="Used to launch ACDC runs. Only task and threshold are required")
 
 
-task_choices = ['ioi', 'docstring', 'induction', 'tracr-reverse', 'tracr-proportion', 'greaterthan', 'or_gate']
+task_choices = ['ioi', 'docstring', 'induction', 'tracr-reverse', 'tracr-proportion', 'greaterthan', 'or_gate', 'transprop']
 parser.add_argument('--task', type=str, required=True, choices=task_choices, help=f'Choose a task from the available options: {task_choices}')
 parser.add_argument('--threshold', type=float, required=True, help='Value for THRESHOLD')
 parser.add_argument('--first-cache-cpu', type=str, required=False, default="True", help='Value for FIRST_CACHE_CPU (the old name for the `online_cache`)')
@@ -232,6 +233,11 @@ use_pos_embed = TASK.startswith("tracr")
 if TASK == "ioi":
     num_examples = 100
     things = get_all_ioi_things(
+        num_examples=num_examples, device=DEVICE, metric_name=args.metric
+    )
+elif TASK == "transprop":
+    num_examples = 80
+    things = get_transprop_things(
         num_examples=num_examples, device=DEVICE, metric_name=args.metric
     )
 elif TASK == "or_gate":

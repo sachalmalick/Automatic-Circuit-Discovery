@@ -53,6 +53,7 @@ class AllDataThings:
     test_labels: Optional[torch.Tensor]
     test_mask: Optional[torch.Tensor]
     test_patch_data: torch.Tensor
+    validation_wrong_labels: Optional[torch.Tensor]
 
 def get_docstring_model(device="cuda"):
     tl_model = HookedTransformer.from_pretrained(
@@ -88,7 +89,7 @@ def get_all_docstring_things(
     toks_int_labels = batched_prompts.correct_tokens.squeeze(-1)
     toks_int_wrong_labels = batched_prompts.wrong_tokens
     assert toks_int_labels.ndim == 1
-    assert toks_int_wrong_labels.ndim == 2
+    assert toks_int_wrong1_labels.ndim == 2
 
     validation_data = toks_int_values[:num_examples]
     validation_labels = toks_int_labels[:num_examples]

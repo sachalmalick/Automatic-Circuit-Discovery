@@ -143,15 +143,17 @@ class TLACDCExperiment:
 
         self.setup_corrupted_cache()
         if self.corrupted_cache_cpu:
+            print("setting up corrupted cache")
             self.global_cache.to("cpu", which_caches="corrupted")
-
+        print("done setting up corrupted cache")
         self.setup_model_hooks(
             add_sender_hooks=add_sender_hooks,
             add_receiver_hooks=add_receiver_hooks,
         )
-
+        print("done setting up model hooks")
         self.using_wandb = using_wandb
         if using_wandb:
+            print("wandb init")
             wandb.init(
                 entity=wandb_entity_name,
                 group=wandb_group_name,
@@ -162,6 +164,7 @@ class TLACDCExperiment:
                 mode=wandb_mode,
                 config=wandb_config,
             )
+        print("wandb done")
 
         self.metric = lambda x: metric(x).item()
         self.second_metric = second_metric
@@ -450,9 +453,11 @@ class TLACDCExperiment:
             print("Done corrupting things")
 
         if self.corrupted_cache_cpu:
+            print("a")
             self.global_cache.to("cpu", which_caches="second")
-
+        print("b")
         self.model.reset_hooks()
+        print("c")
 
     def setup_model_hooks(
         self, 
