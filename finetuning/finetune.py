@@ -44,8 +44,8 @@ def huggingface_finetune(prompts_ds, save_name, train_perc=.5, eval_perc=.3, bat
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
         return metric.compute(predictions=predictions, references=labels)
-    training_args = TrainingArguments(output_dir="training", evaluation_strategy="steps", learning_rate=5e-5, 
-        label_names=["labels"])
+    training_args = TrainingArguments(output_dir="training", evaluation_strategy="epoch", learning_rate=5e-5, 
+        label_names=["labels"], num_train_epochs=20)
     trainer = Trainer(
         model=model,
         args=training_args,
@@ -87,7 +87,7 @@ if __name__ == "__main__":
     # tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     # tokenizer.pad_token = tokenizer.eos_token
     # print(tokenizer.decode(prompts_ds[23]["input_ids"], skip_special_tokens=True))
-    huggingface_finetune(prompts_ds, "tunedmodels/gpt2_test2", train_perc=.01, eval_perc=.005)
-    # test_finetuned_model("tunedmodels/gpt2_test")
+    huggingface_finetune(prompts_ds, "tunedmodels/gpt_transprop_finetune_50p_20ep", train_perc=.5, eval_perc=.1)
+    #test_finetuned_model("tunedmodels/gpt2_test2")
     # train = load_pickled_data("data/train.pkl")
     # print(len(train))

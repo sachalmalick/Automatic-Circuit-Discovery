@@ -21,11 +21,12 @@ import torch.nn.functional as F
 
 from acdc.acdc_utils import kl_divergence, TorchIndex
 from acdc.docstring.utils import AllDataThings
-from acdc.ioi.utils import get_gpt2_small
 from collections import OrderedDict
 from acdc.acdc_utils import MatchNLLMetric, frac_correct_metric, logit_diff_metric, kl_divergence, negative_log_probs
-
+from transformer_lens import loading_from_pretrained
 import random
+
+
 
 FIRST = [
     "cat", "dog", "house", "car", "tree", "bird", "table", "chair", "book", "computer",
@@ -66,6 +67,14 @@ THIRD = [
 ]
 
 PATCH = "henry"
+
+WELTERWEIGHT_FT = "sachalmalick/gpt2-transprop-ft-welterweight"
+LIGHTWEIGHT_FT = "sachalmalick/gpt2-transprop-ft-lightweight"
+FEATHERWEIGHT_FT = "sachalmalick/gpt2-transprop-ft-featherweight"
+
+loading_from_pretrained.OFFICIAL_MODEL_NAMES.append(WELTERWEIGHT_FT)
+loading_from_pretrained.OFFICIAL_MODEL_NAMES.append(LIGHTWEIGHT_FT)
+loading_from_pretrained.OFFICIAL_MODEL_NAMES.append(FEATHERWEIGHT_FT)
     
 def get_prompt_data(num_examples, model, power_template=None):
     if(power_template == None):
@@ -84,6 +93,14 @@ def get_prompt_data(num_examples, model, power_template=None):
     return {"prompts": prompts, "first": first, "second": second, "third": third, "tokens": prompts_tokenized,
     "corrupt_prompts": corrupt_prompts, "corrupt_tokens": corrupt_tokenized, "correct_labels" : correct_labels, "wrong_labels" : wrong_labels}
 
+def get_finetuned_gpt2(modelname=WELTERWEIGHT_FT,device="cuda"):
+    tl_model = HookedTransformer.from_pretrained(modelname)
+    tl_model = tl_model.to(device)
+    tl_model.set_use_attn_result(True)
+    tl_model.set_use_split_qkv_input(True)
+    if "use_hook_mlp_in" in tl_model.cfg.to_dict():
+        tl_model.set_use_hook_mlp_in(True)
+    return tl_model
 
 def get_transprop_things(num_examples,
                                metric_name,
@@ -93,7 +110,7 @@ def get_transprop_things(num_examples,
                                prompt=None,
                                kl_return_one_element=True):
     if(model == None):
-        model = get_gpt2_small(device=device)
+        model = get_finetuned_gpt2(device=device)
     data = get_prompt_data(num_examples, model, power_template=prompt)
     prompt_patch_data = data["corrupt_tokens"]["input_ids"]
     prompt_data = data["tokens"]["input_ids"]

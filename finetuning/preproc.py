@@ -53,11 +53,17 @@ def generate_and_save_nounset(filepath, num_nouns):
     b_nouns = selected_nouns[samples_per_prompt:samples_per_prompt*2]
     c_nouns = selected_nouns[samples_per_prompt*2:]
     nouns = {"a" : a_nouns, "b" : b_nouns, "c" : c_nouns}
-    pickle_obj(nouns, filepath)
+    pickle_obj(filepath, nouns)
     print("Saved all nouns to {}".format(filepath))
     
 def setup():
     generate_and_save_nounset(ALL_NOUNS_FILE, 90000)
+    tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+    tokenizer.pad_token = tokenizer.eos_token
+
+    nounset = load_pickled_data(ALL_NOUNS_FILE)
+    generate_and_save_prompts(nounset, tokenizer)
+    generate_and_save_prompt_tokens()
 
 def evaluate_nounset():
     nounset = load_pickled_data(ALL_NOUNS_FILE)
@@ -134,6 +140,7 @@ def tokenize_dataset(examples):
 
 
 if __name__ == "__main__":
+    #setup()
     tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
     tokenizer.pad_token = tokenizer.eos_token
 
@@ -159,6 +166,8 @@ if __name__ == "__main__":
     model = GPT2LMHeadModel.from_pretrained('gpt2')
     result = model(prompt_ds[23]["input_ids"], labels=prompt_ds[23]["labels"])
     print(result[0])
+
+
     # print("original tokens length", len(prompt_ds[23]["input_ids"]))
     # print("new tokens length", t_and_l["input_ids"].shape)
 

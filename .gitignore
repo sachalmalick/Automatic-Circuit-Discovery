@@ -60,3 +60,7 @@ pts/
 **/.DS_Store
 
 ob-jupyter
+
+finetuning/training/
+finetuning/tunedmodels/
+tunedmodels/
